@@ -2,62 +2,26 @@
 # Introduction
 This project evaluates two classification problems of Subreddit prediction and Discourse prediction of Reddit data. This read me gives a description, development and reasoning behind the solutions. 
 
+Following changes are coming soon...
+
 ## Subreddit Prediction
-In this project, text classification will be conducted using the one-hot encoding and TF-IDF vectorizers through Logistic Regression, C-Support Vector Classification, and Bernoulli Naïve Bayes classifiers. Additionally, two dummy classifiers will be included to set a baseline for evaluation. The first stage before modeling any data is the preprocessing of the data. The train and test data sets were created by processing the JSON file with the reddit data into a data frame. After preprocessing, the train and test data frames are tokenized and vectorized on the selected features. The selected features, title, author, and body, for each thread are tokenized and normalized using SpaCy. The first function, the tokenize function, takes in a string input and returns a set of tokens, which is passed onto the function that normalizes the tokens through whitespace removal and lowercasing. After this process, each feature is vectorized independently twice, with one-hot-encoding and TF-IDF vectorizers, and then combined using an hstack. 
 
-The evaluation regarding the classifiers’ effectiveness is then conducted with three different classifiers, Logistic Regression (LR), C-Support Vector Classification (SVC), and Bernoulli Naïve Bayes (NB). They are further compared with two baseline dummy classifiers, with most frequent and stratified strategies. The following tables present and the macro average performances (MAP) of the mentioned classifiers.
-
- 	One-hot-encoding (MAP)	TF-IDF (MAP)
- 	Accuracy	Precision	Recall	F1	Accuracy	Precision	Recall	F1
-LogisticRegression	0.688	0.578	0.717	0.607	0.575	0.389	0.658	0.423
-SVC	0.23	0.05	0.012	0.019	0.23	0.05	0.012	0.019
-BernoulliNB	0.304	0.085	0.069	0.063	0.304	0.085	0.069	0.063
-Dummy most_frequent	0.23	0.05	0.012	0.019	0.23	0.05	0.012	0.019
-Dummy stratified	0.071	0.029	0.031	0.03	0.129	0.058	0.053	0.055
-Table 1 Classifier macro average performance with one-hot-encoding and TF-IDF. Best performance featured in bold.
 
 ### Baseline Evaluation
-As described in the Table 1, Logistic Regression with one-hot-encoding proved to be more effective than the other analyzed algorithms across all macro average performance. The results of this algorithm are shown in the confusion matrix and graph below. 
-Figures 1a and 1b illustrate the prediction and f1-scores of the best model that was analyzed thus far. In Figure 1b it can be seen that ‘reddit.com’ and ‘starcraft’ had the lowest performance. In contrast, ‘personalfinance’, ‘relationships’, ‘tipofmytongue’, and ‘electronic_cigarette’ were the best performing with f1-score over 0.8. The could be due to the fact that they all have terms specific to a the subreddit’s corresponding topic of interests. On the other hand, the low f1 subreddits such as ‘starcraft’, ‘reddit.com’, and ‘pcmasterrace’ could have terms that are also associated with other subreddits. For example, starcraft related threads were classified into other gaming subreddits such as ‘leagueoflegends’, ‘gaming’, and ‘askreddit’; while most of ‘pcmasterrace’ were classified into ‘techsupport’.
 
-During the evaluation, the Logistic Regression with One-hot-encoding vectorizer proved to be the best model to classify subreddits using the features of title, body, and author. One reason why one-hot-encoding performed better than TF-IDF for this data set might be because one-hot-encoding uses  CountVectorizer(binary representation), only thus only counts the term frequencies; whereas, TF-IDF vectorizer also takes into account term frequency and the amount of documents the term appears in(IDF) showing that for a data set such a reddit threads. Logistic Regression, on the other hand, is an algorithm where normal distribution is possible for independent variables without creating a linear distribution, as required for this project.
 
 ### Hyper parameter tuning to improve effectiveness
 
-Parameter	Value	Parameter	Value
-body__TF-IDF__ngram_range	(1,1)	author__TF-IDF__ngram_range	(1,1)
-body__TF-IDF__sublinear_tf	TRUE	author__TF-IDF__sublinear_tf	TRUE
-body__TF-IDF__max_features	5000	author__TF-IDF__max_features	10000
-title__TF-IDF__ngram_range	(1,1)	LogisticRegression C	10000
-title__TF-IDF__sublinear_tf	TRUE	LogisticRegression solver	saga
-title__TF-IDF__max_features	10000	LogisticRegression multi_class	multinomial
-Table 2 Parameter results found after hyper parameter tuning with sklearn's GridSearchCV
 
-These parameters were applied and compared to the LogisticRegression model from the previous section and compared. As shown in the Table 3, the tuned model has outperformed the baseline LogisticRegression model, displaying the potential of hyperparameter tuning to increase effectiveness.
-
- 	Accuracy	Precision	Recall	F1
-Baseline LogisticRegression Model	0.575	0.389	0.658	0.423
-Tuned LogisticRegression Model	0.737	0.623	0.745	0.646
-Table 3 Macro average performance of baseline LR model and Tuned LR model
-
-Moreover, prediction results and f1-score (Figure 2) of the tuned model correlate with the macro average precision values from Table 3. The confusion matrix and f1 chart show an improvement, however, ‘reddit.com’ posts were still classified incorrectly. The starcraft and pcmasterrace, which also performed poorly in the baseline model improved, leading to an overall improvement of the model after hyper parameter tuning. 
 
 ### Error Analysis 
-Error analysis is performed to improve the tuned LogisticRegression model. The confusion matrix(Figure 2a), macro average performance, and individual class performance(Figure 2b) scores have been observed manually to find any patterns or other insights to improve the effectiveness. Several patterns were discovered, such as ‘reddit.com’ and ‘movies’ being classified mostly in ‘askreddit’, and as mentioned, ‘starcraft’ being classified into other gaming communities. One big pattern that was identified is the classification of several threads into ‘askreddit’. This could be due either the presence of a large number of threads from that subreddit in the data set, or, similar to the case of ‘starcraft’, it could be caused by an overlap of topics. Hence, unique phrases that are utilized in subreddits are required to make a more effective classification, a strenuous task considering the size of the dataset. Therefore, other means to improve the model were sought, such as observing the length of threads and sentiment of comments. A feature such as sentiment of comments can give a large amount of information about subreddits by contextually mining text that explains the type of language being used in different communities. Similarly, the overall and average lengths of bodies and posts can indicate the type of posts that are present in a thread. There by, longer lengths are associated with longer responses and with possibly more serious content, while shorter lengths indicate	 shorter responses, which is typical for less serious content, for instance posts related to humor, both relation to the type of topics of a community.
+
 ### Feature development 
-Post length and average length of a post, body length, and majority_type were the chosen for feature development. Majority_type was extracted directly form the post.get method, while the others were derived through calculation. These four features were added in a pipeline and fit on top of the tuned LogisticRegression classifier. A separate wrapper class was created to add the integer and double type columns into the pipeline. The following table portrays the results of the feature development.
- 	Accuracy	Precision	Recall	F1
-Tuned LogisticRegression Model	0.737	0.623	0.745	0.646
-LogisticRegression Model with majority_type	0.729	0.626	0.783	0.655
-LogisticRegression Model with post, body, avg lengths	0.775	0.688	0.797	0.710
-LogisticRegression Model with all combined Features	0.740	0.644	0.803	0.667
-Table 4 Macro average performance of independent and combined LR models
+
 ### Evaluation
-Through results from Table 4, it can be understood that the LogisticRegression model with post_lengths, body_lengths, and average_length of a thread performed far better that the other models in terms of macro average performance. The experiment was divided this way in order to differentiate between the impact of adding the lengths as a feature, in comparison to majority_type. Majority_type gives information about a body’s sentiment, which was expected to help classify threads; however, it perfomed more poorly. This signifies that a comment’s sentiment is not a useful classification feature for subreddit classification. On the contrary, the average length of a post, post length (total comments), and body length proved have a larger impact on subreddit classification. Although this may be true, when these features were combined with majority_type, there was not an improvement in the macro average scores as seen with the lengths, confirming that majority_type should is not a good feature for subreddit classification.
+
 ## Discourse Prediction
-i. The objective for this section is to conduct text classification to predict the discourse type of a reddit thread’s comment. The features of author, title, and body are extracted from the reddit data set and fitted with LogisticRegression classifier with TF-IDF vectorizer. The following figures describe the evaluation of macro average performance using the mentioned features, classifier, and vectorizer.
-Figures 3a and 3b shows that the macro average performance for the entire model is very low(Fig. 3b). Moreover, appreciation, answer, and question have the highest f1-scores by huge margin, while disagreement, negative reaction, and humor are ranked in the lowest. This could be due to the fact that negative reactions, disagreements, humor, and other low scoring categories are generally harder to recognize in text and may contain smaller lengths. For instance, negative reaction may rely on different use of punctuation, uppercase lettering, implying a negative sentiment. On the other hand, answer appreciation, and question contain recognizable attributes when compared to the lower ranked discourse types. For example, an answer might contain lots of text, with more details that can be used for classification. Moreover, an appreciation may include certain phrases of acknowledgement such as ‘thank you’. 
-ii. To improve the current model, an error analysis was performed. After manually observing the results, and upon reflection of exercise two, it can be noted that adding thread features such as total number of comments and average length of a post are valuable features to improve the performance of the model. As observed in exercise two and through the results shown in Table4, longer length of a comment correlates with more information, while shorter ones contain less information but may imply a different type of discourse(humor or negative reaction). Similarly, post depth is a structural attribute that plays a pivotal role in classifying discourse. For example, a deeper post may indicate an event of a discussion or a conversation in the reddit thread. This could imply that there is an answer, elaboration, or disagreement occurring in this conversation. Furthermore, a critical factor is to consider content and punctuation because it allows the model to recognize different types of language such as a negative sentiment (for example, the use of ‘!’ or uppercase phrases), or a question (for example, the use of ‘?’). Content can also play a key role for correctly classifying discourse types such as recognizing certain phrases and acronyms. Equally important, the subreddit could be a decisive factor where different subreddits can contain certain discourse types. For instance, the ‘starcraft’ or ‘leagueoflegends’ subreddit may contain conversations with a lot of humor, disagreements, announcements, agreements, negative reactions, and even answers, because these threads tend to hold more informal discussions about the games, or different features; whereas, the ‘askreddit’ may contain more answers because people tend to post questions looking for answers.
+
 ### Selected Features
 #### Feature 1: Metadata, Subreddit with Author
 The property of author combined with the subreddit - thread['subreddit'] + "," +  post.get('author', "")-can give valuable underlying information. This could give a pattern of repeat authors in subreddit, indicating what kind of post they usually participate in. For example, if it’s a gaming subreddit, there is more change of reactionary posts, but if they are linked with a subreddit such as ‘relationship’, the posts tend to be answers or elaborations.
@@ -72,20 +36,7 @@ If the top author of a thread is the same as one of the authors of the body post
 Total comments (len(thread[‘posts’]) of a thread plays a pivotal role to classify a discourse type. More comments indicate more ‘answers’, ‘agreements’, ‘elaboration’, ‘disagreements’, and could even mean deeper conversations. On the other hand, a smaller conversation may mean less detailed content and more reactionary posts. To add total comments as an integer into the pipeline, a one line wrapper class was created that returns the reshaped ‘total_comments’ column.
 #### Feature 6: Community, Subreddit
 One of the most imperative features the subreddit(thread[‘subreddit’]). Each subreddit contains different type of topics, language, and engagement. For instance, a certain subreddit such as ‘movies’ might have many different types of discourse, a thread could contain a movie spoiler, to which there could be many negative and positive reactions, humor, disagreements, agreements, so on. 
-ii. The macro average precision and the overall performance of the all six features, modelled independently and combined are portrayed in the following table.
-	Accuracy	Precision	Recall	F1-score
-Baseline LR + TF-IDF	0.431	0.249	0.288	0.261
-1. Subreddit with Author + Baseline	0.425	0.245	0.283	0.257
-2. Punctuation Tokenizer + Baseline	0.502	0.291	0.345	0.307
-3. Post depth and length + Baseline	0.520	0.320	0.352	0.329
-4. Same Author + Baseline	0.458	0.275	0.305	0.284
-5. Total comments + Baseline	0.516	0.231	0.463	0.241
-6. Subreddit + Baseline	0.431	0.249	0.288	0.261
-Combined Model	0.657	0.392	0.531	0.407
-Table 5 Macro avg. performance of all models after adding additional features. In bold, best performing model.
+
 
 ### Final Evaluation
-As presented in the Table 5, the final combined	model exceeded the performance of the baseline LogisticRegression model as well as other models with each models with individual features. The f1-score, accuracy, precision, and recall scores are significantly higher than the baseline score. The features with punctuation tokenizer, structural features of post depth and length proved to be the best independent features with f1 score of 0.307 and 0.329 respectively. Same top author feature was the next best model, with F1-score of 0.284, still a significant improvement over the base model. However, there were three features that performed at par or below the baseline. The feature with just the subreddit performed at par with the baseline, while the total comments and subreddit plus author feature worse than the baseline. Regardless, the final combination model outperformed all other models with final f1-score of 0.407, accuracy of 0.657, precision of 0.392, and recall of 0.531. Further improvements to consider are removing the features that performed poorly and adding other features such as word2vec and doc2vec embeddings or two-stage prediction 
-### Feature importance 
-The feature importance graph was implemented using the Eli5 library to visualize the feature performance of the final combined model, as previously described in Table 5. The following chart illustrates multiple features, with their respective weights, of each target class (discourse type). Thereby, the best and worst performing features were highlighted in green and red, respectively, showing all the positive weights and the negative weights of each discourse type. The best performing feature, part of the ‘question’ discourse type, is x86655, thus was given the highest weight of +22.421. This informs that this feature was successfully able to classify most of the questions as questions. 
 
