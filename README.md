@@ -2,25 +2,11 @@
 # Introduction
 This project evaluates two classification problems of Subreddit prediction and Discourse prediction of Reddit data. This read me gives a description, development and reasoning behind the solutions. 
 
-Following changes are coming soon...
-
-## Subreddit Prediction
-
-
-### Baseline Evaluation
+# Requirements
+- JupyterNotebook or run on Google Colab
+- python 3.5+
 
 
-### Hyper parameter tuning to improve effectiveness
-
-
-
-### Error Analysis 
-
-### Feature development 
-
-### Evaluation
-
-## Discourse Prediction
 
 ### Selected Features
 #### Feature 1: Metadata, Subreddit with Author
@@ -38,5 +24,4 @@ Total comments (len(thread[‘posts’]) of a thread plays a pivotal role to cla
 One of the most imperative features the subreddit(thread[‘subreddit’]). Each subreddit contains different type of topics, language, and engagement. For instance, a certain subreddit such as ‘movies’ might have many different types of discourse, a thread could contain a movie spoiler, to which there could be many negative and positive reactions, humor, disagreements, agreements, so on. 
 
 
-### Final Evaluation
 
